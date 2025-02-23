@@ -15,6 +15,11 @@ internal static class Endpoints
 
     internal static async Task<IResult> SaveUser(QueryFactory db, UserData userData)
     {
+        if (db.Connection.State != System.Data.ConnectionState.Open)
+        {
+            db.Connection.Open();
+        }
+
         await db.Query("cv1").InsertAsync(new
         {
             ip = userData.Ip,
@@ -33,6 +38,11 @@ internal static class Endpoints
 
     internal static async Task<IResult> GetLogs(QueryFactory db, [FromQuery] bool filter, [FromQuery] string ip, [FromQuery] int page)
     {
+        if (db.Connection.State != System.Data.ConnectionState.Open)
+        {
+            db.Connection.Open();
+        }
+
         var pageSize = 25;
 
         var users = filter
