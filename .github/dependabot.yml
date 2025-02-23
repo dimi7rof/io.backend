@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
     labels:
       - "dependencies"
       - ".NET"
@@ -14,7 +18,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
     labels:
       - "dependencies"
       - "ci/cd"
