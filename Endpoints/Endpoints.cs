@@ -33,7 +33,7 @@ internal static class Endpoints
 
     internal static async Task<IResult> GetLogs(QueryFactory db, [FromQuery] bool filter, [FromQuery] string ip, [FromQuery] int page)
     {
-        var pageSize = 20;
+        var pageSize = 25;
 
         var users = filter
             ? await db.Query("cv1")
