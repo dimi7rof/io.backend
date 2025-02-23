@@ -36,28 +36,26 @@ internal static class Endpoints
         return Results.Ok();
     }
 
-    internal static async Task<IResult> GetLogs(QueryFactory db, [FromQuery] bool filter, [FromQuery] string ip, [FromQuery] int page)
+    internal static async Task<IResult> GetLogs(QueryFactory db, [FromQuery] bool filter, [FromQuery] string ip, [FromQuery] int page, [FromQuery] int size)
     {
         if (db.Connection.State != System.Data.ConnectionState.Open)
         {
             db.Connection.Open();
         }
 
-        var pageSize = 25;
-
         var users = filter
             ? await db.Query("cv1")
                 .Select("ip as Ip", "country as Country", "city as City", "os as Os", "browser as Browser", "datetime as DateTime", "provider as Org")
                 .Where("ip", "<>", ip)
                 .OrderByDesc("DateTime")
-                .Skip(pageSize * page)
-                .Take(pageSize)
+                .Skip(size * page)
+                .Take(size)
                 .GetAsync<UserData>()
             : await db.Query("cv1")
                 .Select("ip as Ip", "country as Country", "city as City", "os as Os", "browser as Browser", "datetime as DateTime", "provider as Org")
                 .OrderByDesc("DateTime")
-                .Skip(pageSize * page)
-                .Take(pageSize)
+                .Skip(size * page)
+                .Take(size)
                 .GetAsync<UserData>();
 
         db.Connection.Close();
