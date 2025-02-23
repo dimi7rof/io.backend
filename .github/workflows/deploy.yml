@@ -15,6 +15,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_TAG: ${{ github.event.inputs.tag || '1.0.0' }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -30,4 +33,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: dimi7rof/cvbackend:${{ github.event.inputs.tag }}
+          tags: dimi7rof/cvbackend:${{ env.IMAGE_TAG }}
