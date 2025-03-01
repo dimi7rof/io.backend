@@ -62,11 +62,13 @@ jobs:
           echo "new_tag=$new_tag" >> $GITHUB_ENV
 
       - name: Create Git Tag
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$new_tag" -m "Release $new_tag\n\n$commits"
-          git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git "$new_tag"
+          git push https://x-access-token:${{ env.PAT_TOKEN }}@github.com/${{ github.repository }}.git "$new_tag"
 
 
       - name: Log in to Docker Hub
