@@ -45,12 +45,13 @@ jobs:
           echo "commits<<EOF" >> $GITHUB_ENV
           echo "$commits" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          echo "commits=$commits" >> "$GITHUB_OUTPUT"
       
       - name: Calculate Next Tag
         id: next_tag
         run: |
           IFS='.' read -r major minor patch <<< "$latest_tag"
-          bump_type="${{ github.event.inputs.version_bump || 'patch' }}"  # Default to patch if empty
+          bump_type="${{ github.event.inputs.version_bump || 'patch' }}"
           echo "Version bump type: $bump_type"
           
           case "$bump_type" in
@@ -63,7 +64,7 @@ jobs:
           new_tag="$major.$minor.$patch"
           echo "New tag: $new_tag"
           echo "new_tag=$new_tag" >> $GITHUB_ENV
-          echo "::set-output name=new_tag::$new_tag"
+          echo "new_tag=$new_tag" >> "$GITHUB_OUTPUT"
           
       - name: Create Git Tag
         run: |
@@ -79,8 +80,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.next_tag.outputs.new_tag }}
-          release_name: Release ${{ steps.next_tag.outputs.new_tag }}
+          tag_name: ${{ env.new_tag }}
+          release_name: Release ${{ env.new_tag }}
           body: |
             Changes in this release:
             ${{ env.commits }}
@@ -95,7 +96,9 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
+        env:
+          new_tag: ${{ env.new_tag }}
         with:
           context: .
           push: true
-          tags: dimi7rof/cvbackend:${{ steps.next_tag.outputs.new_tag }}
+          tags: dimi7rof/cvbackend:$new_tag
