@@ -1,7 +1,6 @@
 ﻿using CvBackend.Models;
+using CvBackend.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using SqlKata.Execution;
-using System.Globalization;
 
 namespace CvBackend.Endpoints;
 
@@ -9,57 +8,34 @@ internal static class Endpoints
 {
     internal static void RegisterEndpoints(this WebApplication app)
     {
-        app.MapPost("api/user", SaveUser);
-        app.MapGet("api/logs", GetLogs);
+        app.MapPost("api/insertVisitor", InsertVisitor);
+        app.MapGet("api/getVisitors", GetVisitors);
+        app.MapGet("api/getStatistics", GetStatistics);
     }
 
-    internal static async Task<IResult> SaveUser(QueryFactory db, UserData userData)
+    internal static async Task<IResult> InsertVisitor([FromServices] IUserRepository repo, [FromBody] UserData userData)
     {
-        if (db.Connection.State != System.Data.ConnectionState.Open)
-        {
-            db.Connection.Open();
-        }
-
-        await db.Query("cv1").InsertAsync(new
-        {
-            ip = userData.Ip,
-            country = userData.Country,
-            city = userData.City,
-            os = userData.Os,
-            browser = userData.Browser,
-            datetime = DateTime.UtcNow.AddHours(2).ToString("yyyy-MM-dd, HH:mm:ss", CultureInfo.InvariantCulture),
-            provider = userData.Org
-        });
-
-        db.Connection.Close();
+        await repo.InsertVisitor(userData);
 
         return Results.Ok();
     }
 
-    internal static async Task<IResult> GetLogs(QueryFactory db, [FromQuery] bool filter, [FromQuery] string ip, [FromQuery] int page, [FromQuery] int size)
+    internal static async Task<IResult> GetVisitors(
+        [FromServices] IUserRepository repo,
+        [FromQuery] bool filter,
+        [FromQuery] string ip,
+        [FromQuery] int page,
+        [FromQuery] int size)
     {
-        if (db.Connection.State != System.Data.ConnectionState.Open)
-        {
-            db.Connection.Open();
-        }
-
-        var users = filter
-            ? await db.Query("cv1")
-                .Select("ip as Ip", "country as Country", "city as City", "os as Os", "browser as Browser", "datetime as DateTime", "provider as Org")
-                .Where("ip", "<>", ip)
-                .OrderByDesc("DateTime")
-                .Skip(size * page)
-                .Take(size)
-                .GetAsync<UserData>()
-            : await db.Query("cv1")
-                .Select("ip as Ip", "country as Country", "city as City", "os as Os", "browser as Browser", "datetime as DateTime", "provider as Org")
-                .OrderByDesc("DateTime")
-                .Skip(size * page)
-                .Take(size)
-                .GetAsync<UserData>();
-
-        db.Connection.Close();
+        var users = await repo.GetVisitors(filter, ip, page, size);
 
         return Results.Ok(users);
+    }
+
+    internal static async Task<IResult> GetStatistics([FromServices] IUserRepository repo)
+    {
+        var stat = await repo.GetStatictics();
+
+        return Results.Ok(stat);
     }
 }

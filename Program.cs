@@ -1,4 +1,5 @@
 using CvBackend.Endpoints;
+using CvBackend.Repositories;
 using Npgsql;
 using SqlKata.Compilers;
 using SqlKata.Execution;
@@ -9,18 +10,21 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(["http://localhost:4200", "https://dimi7rof.github.io"])
+        policy.WithOrigins(["https://dimi7rof.github.io"])
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
+
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                      .AddEnvironmentVariables();
 
-builder.Services.AddSingleton(provider
+builder.Services.AddScoped(provider
     => new QueryFactory(
             new NpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")),
             new PostgresCompiler()));
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
