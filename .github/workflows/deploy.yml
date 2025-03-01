@@ -42,21 +42,25 @@ jobs:
           echo "commits<<EOF" >> $GITHUB_ENV
           echo "$commits" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
+      
       - name: Calculate Next Tag
         id: next_tag
         run: |
           IFS='.' read -r major minor patch <<< "$latest_tag"
-          bump_type="${{ inputs.version_bump }}"
+          bump_type="${{ github.event.inputs.version_bump || 'patch' }}"  # Default to patch if empty
+          echo "Version bump type: $bump_type"
+          
           case "$bump_type" in
             major) major=$((major + 1)); minor=0; patch=0 ;;
             minor) minor=$((minor + 1)); patch=0 ;;
             patch) patch=$((patch + 1)) ;;
             *) echo "Invalid version bump type"; exit 1 ;;
           esac
+
           new_tag="$major.$minor.$patch"
           echo "New tag: $new_tag"
           echo "new_tag=$new_tag" >> $GITHUB_ENV
+
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
