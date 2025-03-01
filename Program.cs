@@ -10,7 +10,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(["https://dimi7rof.github.io"])
+        policy.WithOrigins(["http://localhost:4200", "https://dimi7rof.github.io"])
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
