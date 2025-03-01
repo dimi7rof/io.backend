@@ -101,4 +101,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: dimi7rof/cvbackend:$new_tag
+          tags: dimi7rof/cvbackend:${{ env.new_tag }}
