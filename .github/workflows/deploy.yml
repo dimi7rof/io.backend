@@ -63,6 +63,7 @@ jobs:
           new_tag="$major.$minor.$patch"
           echo "New tag: $new_tag"
           echo "new_tag=$new_tag" >> $GITHUB_ENV
+          echo "::set-output name=new_tag::$new_tag"
           
       - name: Create Git Tag
         run: |
@@ -85,4 +86,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: dimi7rof/cvbackend:{{ $env.new_tag }}
+          tags: dimi7rof/cvbackend:${{ steps.next_tag.outputs.new_tag }}
