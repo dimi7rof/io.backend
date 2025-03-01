@@ -53,20 +53,17 @@ public class UserRepository : IUserRepository
                 .GetAsync<UserData>();
 
         var stat = query.ToArray();
-        var all = stat.Length;
-        var unique = stat.Select(x => x.Ip).Distinct().Count();
-        var monthly = stat
-            .Where(x => x.DateTime?
-                .StartsWith(DateTime.UtcNow.
-                    AddHours(2)
-                    .ToString("yyyy-MM", CultureInfo.InvariantCulture)) ?? false)
-            .Count();
 
         var result = new StatDto()
         {
-            Unique = unique,
-            All = all,
-            Monthy = monthly
+            Unique = stat.Select(x => x.Ip).Distinct().Count(),
+            All = stat.Length,
+            Monthly = stat
+                .Where(x => x.DateTime?
+                    .StartsWith(DateTime.UtcNow.
+                        AddHours(2)
+                        .ToString("yyyy-MM", CultureInfo.InvariantCulture)) ?? false)
+                .Count()
         };
 
         CloseConnection();
