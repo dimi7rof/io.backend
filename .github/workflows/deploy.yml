@@ -38,16 +38,25 @@ jobs:
             latest_tag="0.0.0"
           fi
           echo "latest_tag=$latest_tag" >> $GITHUB_ENV
-
       - name: Get Commits Since Last Tag
         id: get_commits
         run: |
           commits=$(git log "$latest_tag"..HEAD --pretty=format:"- %s")
+
           echo -e "Commits since last tag:\n$commits"
+
+          # Store in Environment Variables (for later use)
           echo "commits<<EOF" >> $GITHUB_ENV
           echo "$commits" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-          echo "commits=$commits" >> "$GITHUB_OUTPUT"
+
+          # Store as an output properly
+          {
+            echo "commits<<EOF"
+            echo "$commits"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       
       - name: Calculate Next Tag
         id: next_tag
