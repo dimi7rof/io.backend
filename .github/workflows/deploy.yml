@@ -56,14 +56,14 @@ jobs:
           echo "New tag: $new_tag"
           echo "new_tag=$new_tag" >> $GITHUB_ENV
 
-      - name: Create Git Tag
+      - name: Get Commits Since Last Tag
+        id: get_commits
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$new_tag" -m "Release $new_tag\n\n$commits"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$new_tag"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          commits=$(git log "$latest_tag"..HEAD --pretty=format:"- %s")
+          echo -e "Commits since last tag:\n$commits"
+          echo "commits<<EOF" >> $GITHUB_ENV
+          echo "$commits" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
