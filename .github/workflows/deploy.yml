@@ -1,4 +1,4 @@
-name: Deploy
+name: Tag, Build and deploy
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
           - patch
 
 jobs:
-  build-and-deploy:
+  tag-build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
