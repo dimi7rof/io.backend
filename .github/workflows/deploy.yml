@@ -42,13 +42,10 @@ jobs:
           commits=$(git log "$latest_tag"..HEAD --pretty=format:"- %s")
 
           echo -e "Commits since last tag:\n$commits"
-
-          # Store in Environment Variables (for later use)
           echo "commits<<EOF" >> $GITHUB_ENV
           echo "$commits" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-          # Store as an output properly
           {
             echo "commits<<EOF"
             echo "$commits"
