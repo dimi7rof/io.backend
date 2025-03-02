@@ -38,6 +38,7 @@ jobs:
             latest_tag="0.0.0"
           fi
           echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+
       - name: Get Commits Since Last Tag
         id: get_commits
         run: |

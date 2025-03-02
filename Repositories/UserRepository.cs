@@ -24,20 +24,19 @@ public class UserRepository : IUserRepository
     {
         OpenConnection();
 
-        var users = filter
-            ? await _db.Query("cv1")
-                .Select("ip as Ip", "country as Country", "city as City", "os as Os", "browser as Browser", "datetime as DateTime", "provider as Org")
-                .Where("ip", "<>", ip)
-                .OrderByDesc("DateTime")
-                .Skip(size * page)
-                .Take(size)
-                .GetAsync<UserData>()
-            : await _db.Query("cv1")
-                .Select("ip as Ip", "country as Country", "city as City", "os as Os", "browser as Browser", "datetime as DateTime", "provider as Org")
-                .OrderByDesc("DateTime")
-                .Skip(size * page)
-                .Take(size)
-                .GetAsync<UserData>();
+        var query = _db.Query("cv1")
+                       .Select("ip as Ip", "country as Country", "city as City", "os as Os", "browser as Browser", "datetime as DateTime", "provider as Org");
+
+        if (filter)
+        {
+            query.Where("ip", "<>", ip);
+        }
+
+        query.OrderByDesc("DateTime")
+             .Skip(size * page)
+             .Take(size);
+
+        var users =  await query.GetAsync<UserData>();
 
         CloseConnection();
 
