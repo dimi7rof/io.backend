@@ -1,17 +1,9 @@
 name: Tag, Build and deploy
 
 on:
-  workflow_dispatch:
-    inputs:
-      version_bump:
-        description: 'Version bump type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - major
-          - minor
-          - patch
+  push:
+    tags:
+      - "*"
 
 permissions:
   contents: write
@@ -25,74 +17,17 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
-      - name: Get Latest Tag
-        id: get_tag
+      - name: Set version from tag
         run: |
-          latest_tag=$(git tag --sort=-v:refname | head -n 1)
-          echo "Latest tag: $latest_tag"
-          if [[ -z "$latest_tag" ]]; then
-            latest_tag="0.0.0"
-          fi
-          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "VERSION: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
 
-      - name: Get Commits Since Last Tag
-        id: get_commits
-        run: |
-          commits=$(git log "$latest_tag"..HEAD --pretty=format:"- %s")
-
-          echo -e "Commits since last tag:\n$commits"
-          echo "commits<<EOF" >> $GITHUB_ENV
-          echo "$commits" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-          {
-            echo "commits<<EOF"
-            echo "$commits"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      
-      - name: Calculate Next Tag
-        id: next_tag
-        run: |
-          IFS='.' read -r major minor patch <<< "$latest_tag"
-          bump_type="${{ github.event.inputs.version_bump || 'patch' }}"
-          echo "Version bump type: $bump_type"
-          
-          case "$bump_type" in
-            major) major=$((major + 1)); minor=0; patch=0 ;;
-            minor) minor=$((minor + 1)); patch=0 ;;
-            patch) patch=$((patch + 1)) ;;
-            *) echo "Invalid version bump type"; exit 1 ;;
-          esac
-
-          new_tag="$major.$minor.$patch"
-          echo "New tag: $new_tag"
-          echo "new_tag=$new_tag" >> $GITHUB_ENV
-          echo "new_tag=$new_tag" >> "$GITHUB_OUTPUT"
-          
-      - name: Create Git Tag
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$new_tag" -m "Release $new_tag\n\n$commits"
-          git push origin "$new_tag"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run release action
+        uses: dimi7rof/create-release@v3
         with:
-          tag_name: ${{ env.new_tag }}
-          release_name: Release ${{ env.new_tag }}
-          body: |
-            Changes in this release:
-            ${{ env.commits }}
-          draft: false
-          prerelease: false
+          name: dimi7rof.github.io
+          version: ${{ github.ref_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -108,4 +43,3 @@ jobs:
           context: .
           push: true
           tags: dimi7rof/cvbackend:${{ env.new_tag }}
-
